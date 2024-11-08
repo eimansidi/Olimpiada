@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.*?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="com.eiman.olimpiada.controller.MainController">
+    <top>
+        <HBox spacing="10" alignment="CENTER_LEFT" style="-fx-padding: 10;">
+            <!-- ComboBox para seleccionar la tabla -->
+            <ComboBox fx:id="tablaComboBox" promptText="%select.table" prefWidth="150"/>
+            <!-- Campo de texto para filtrar resultados -->
+            <Label text="%filter.prompt"/>
+            <TextField fx:id="filterField" promptText="%filter.prompt" prefWidth="200"/>
+        </HBox>
+    </top>
+
+    <!-- TableView central que mostrará los datos de la tabla seleccionada -->
+    <center>
+        <TableView fx:id="tablaView" VBox.vgrow="ALWAYS">
+            <!-- Las columnas se generarán dinámicamente en el controlador -->
+        </TableView>
+    </center>
+
+    <!-- Barra inferior con los botones de acción -->
+    <bottom>
+        <HBox spacing="10" alignment="CENTER" style="-fx-padding: 10;">
+            <!-- Botón Añadir -->
+            <Button text="%button.add" fx:id="addButton" minWidth="80" onAction="#handleAddAction"/>
+
+            <!-- Botón Modificar -->
+            <Button text="%button.modify" fx:id="modifyButton" minWidth="80" onAction="#handleModifyAction"/>
+
+            <!-- Botón Eliminar -->
+            <Button text="%button.delete" fx:id="deleteButton" minWidth="80" onAction="#handleDeleteAction"/>
+        </HBox>
+    </bottom>
+</BorderPane>

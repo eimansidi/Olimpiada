@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns:fx="http://javafx.com/fxml" fx:controller="com.eiman.olimpiada.controller.EventoController" spacing="10" alignment="CENTER" style="-fx-padding: 10;">
+    <GridPane hgap="10" vgap="10">
+        <!-- Campo de Nombre del Evento -->
+        <Label text="%label.name" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+        <TextField fx:id="nombreField" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+        <!-- Campo de Deporte -->
+        <Label text="%label.sport" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+        <ComboBox fx:id="deporteComboBox" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+        <!-- Campo de Olimpiada -->
+        <Label text="%label.olympics" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+        <ComboBox fx:id="olimpiadaComboBox" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+    </GridPane>
+
+    <!-- Botones de Guardar y Cancelar -->
+    <HBox spacing="10" alignment="CENTER">
+        <Button text="%button.save" onAction="#handleSave"/>
+        <Button text="%button.cancel" onAction="#handleCancel"/>
+    </HBox>
+</VBox>

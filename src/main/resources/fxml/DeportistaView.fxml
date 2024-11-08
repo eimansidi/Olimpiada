@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.image.ImageView?>
+
+<VBox xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.eiman.olimpiada.controller.DeportistaController" spacing="10" alignment="CENTER" style="-fx-padding: 10;">
+
+    <GridPane hgap="10" vgap="10">
+        <!-- Nombre -->
+        <Label text="%label.name" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+        <TextField fx:id="nombreField" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+        <!-- Sexo -->
+        <Label text="%label.sex" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+        <HBox spacing="10" GridPane.rowIndex="1" GridPane.columnIndex="1">
+            <RadioButton fx:id="masculinoRadio" text="M"/>
+            <RadioButton fx:id="femeninoRadio" text="F"/>
+        </HBox>
+
+        <!-- Edad -->
+        <Label text="%label.age" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+        <TextField fx:id="edadField" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+
+        <!-- Peso -->
+        <Label text="%label.weight" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+        <TextField fx:id="pesoField" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+
+        <!-- Altura -->
+        <Label text="%label.height" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+        <TextField fx:id="alturaField" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+
+        <!-- Selección de Foto -->
+        <Label text="%label.photo" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
+        <Button text="%button.select_photo" onAction="#handleSelectPhoto" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
+    </GridPane>
+
+    <!-- Vista previa de la foto -->
+    <ImageView fx:id="fotoImageView" fitHeight="150" fitWidth="150"/>
+
+    <!-- Botones de acción -->
+    <HBox spacing="10" alignment="CENTER">
+        <Button text="%button.save" onAction="#handleSave"/>
+        <Button text="%button.cancel" onAction="#handleCancel"/>
+    </HBox>
+
+</VBox>

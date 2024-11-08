@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns:fx="http://javafx.com/fxml" fx:controller="com.eiman.olimpiada.controller.ParticipacionController" spacing="10" alignment="CENTER" style="-fx-padding: 10;">
+    <GridPane hgap="10" vgap="10">
+
+        <!-- Campo para seleccionar el Deportista -->
+        <Label text="%label.name" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+        <ComboBox fx:id="deportistaComboBox" GridPane.rowIndex="0" GridPane.columnIndex="1" prefWidth="200"/>
+
+        <!-- Campo para seleccionar el Evento -->
+        <Label text="%label.event" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+        <ComboBox fx:id="eventoComboBox" GridPane.rowIndex="1" GridPane.columnIndex="1" prefWidth="200"/>
+
+        <!-- Campo para seleccionar el Equipo -->
+        <Label text="%label.team" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+        <ComboBox fx:id="equipoComboBox" GridPane.rowIndex="2" GridPane.columnIndex="1" prefWidth="200"/>
+
+        <!-- RadioButtons para seleccionar la Medalla -->
+        <Label text="%label.medal" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+        <HBox spacing="10" GridPane.rowIndex="4" GridPane.columnIndex="1">
+            <RadioButton fx:id="oroRadio" text="%medal.gold"/>
+            <RadioButton fx:id="plataRadio" text="%medal.silver"/>
+            <RadioButton fx:id="bronceRadio" text="%medal.bronze"/>
+            <RadioButton fx:id="otroRadio" text="%medal.other"/>
+        </HBox>
+    </GridPane>
+
+    <!-- Botones de Guardar y Cancelar -->
+    <HBox spacing="10" alignment="CENTER">
+        <Button text="%button.save" onAction="#handleSave"/>
+        <Button text="%button.cancel" onAction="#handleCancel"/>
+    </HBox>
+</VBox>
