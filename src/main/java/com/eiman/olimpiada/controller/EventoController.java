@@ -5,7 +5,6 @@ import com.eiman.olimpiada.dao.EventoDAO;
 import com.eiman.olimpiada.dao.OlimpiadaDAO;
 import com.eiman.olimpiada.model.Evento;
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ComboBox;
@@ -14,10 +13,8 @@ import javafx.stage.Stage;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.ResourceBundle;
 
 public class EventoController {
@@ -36,13 +33,14 @@ public class EventoController {
     private ComboBox<String> olimpiadaComboBox;
 
     public EventoController() {
-        this.bundle = ResourceBundle.getBundle("lang.messages", Locale.getDefault());
+        this.bundle = ResourceBundle.getBundle("lang.messages");
     }
 
     public void setConnection(Connection connection) {
         this.connection = connection;
         this.eventoDAO = new EventoDAO();
-        loadComboBoxData();  // Cargar datos en los ComboBox al establecer conexión
+        eventoDAO.setConnection(connection);
+        loadComboBoxData(); // Cargar datos en los ComboBox cuando se establece la conexión
     }
 
     @FXML
@@ -58,20 +56,7 @@ public class EventoController {
         this.evento = evento;
         nombreField.setText(evento.getNombre());
         deporteComboBox.setValue(DeporteDAO.getNameById(evento.getIdDeporte())); // Cargar nombre del deporte
-        olimpiadaComboBox.setValue(OlimpiadaDAO.getNameById(evento.getIdOlimpiada())); // Cargar año de la olimpiada
-    }
-
-    /**
-     * Obtiene un objeto Evento a partir de los campos del formulario.
-     *
-     * @return Objeto Evento con los valores ingresados en los campos del formulario.
-     */
-    public Evento getData() throws SQLException {
-        Evento evento = new Evento();
-        evento.setNombre(nombreField.getText());
-        evento.setIdDeporte(DeporteDAO.getIdByName(deporteComboBox.getValue()));
-        evento.setIdOlimpiada(OlimpiadaDAO.getIdByName(String.valueOf(Integer.parseInt(olimpiadaComboBox.getValue()))));
-        return evento;
+        olimpiadaComboBox.setValue(OlimpiadaDAO.getNameById(evento.getIdOlimpiada())); // Cargar nombre de la olimpiada
     }
 
     @FXML
@@ -79,7 +64,7 @@ public class EventoController {
         List<String> errors = new ArrayList<>();
 
         String nombre = nombreField.getText();
-        if (nombre.isEmpty()) {
+        if (nombre == null || nombre.isEmpty()) {
             errors.add(bundle.getString("label.name"));
         }
 
@@ -99,7 +84,7 @@ public class EventoController {
         }
 
         try {
-            closeWindow();
+            // Configurar el evento
             if (evento == null) {
                 evento = new Evento(); // Crear un nuevo evento si no existe
             }
@@ -107,13 +92,13 @@ public class EventoController {
             evento.setIdDeporte(DeporteDAO.getIdByName(deporte));
             evento.setIdOlimpiada(OlimpiadaDAO.getIdByName(olimpiada));
 
-
+            // Intentar guardar o actualizar según el modo de edición
             boolean success = editMode ? eventoDAO.updateEvento(evento) : eventoDAO.insertEvento(evento);
 
             if (success) {
                 showAlert(bundle.getString("alert.success_save"), Alert.AlertType.INFORMATION);
                 clearFields();
-
+                closeWindow();
             } else {
                 showAlert(bundle.getString("alert.error_save"), Alert.AlertType.ERROR);
             }
@@ -129,7 +114,7 @@ public class EventoController {
     private void loadComboBoxData() {
         try {
             deporteComboBox.setItems(FXCollections.observableArrayList(DeporteDAO.getAllDeporteNames()));
-            olimpiadaComboBox.setItems(FXCollections.observableArrayList(OlimpiadaDAO.getAllOlimpiadaName()));
+            olimpiadaComboBox.setItems(FXCollections.observableArrayList(OlimpiadaDAO.getAllOlimpiadaNames()));
         } catch (SQLException e) {
             showAlert("Error al cargar datos en ComboBox", Alert.AlertType.ERROR);
             e.printStackTrace();

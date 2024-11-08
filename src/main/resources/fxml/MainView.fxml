@@ -5,13 +5,23 @@
 
 <BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="com.eiman.olimpiada.controller.MainController">
     <top>
-        <HBox spacing="10" alignment="CENTER_LEFT" style="-fx-padding: 10;">
-            <!-- ComboBox para seleccionar la tabla -->
-            <ComboBox fx:id="tablaComboBox" promptText="%select.table" prefWidth="150"/>
-            <!-- Campo de texto para filtrar resultados -->
-            <Label text="%filter.prompt"/>
-            <TextField fx:id="filterField" promptText="%filter.prompt" prefWidth="200"/>
-        </HBox>
+        <VBox>
+            <!-- Barra de menú -->
+            <MenuBar>
+                <Menu text="%menu.options">
+                    <MenuItem text="Español" onAction="#setSpanish"/>
+                    <MenuItem text="Inglés" onAction="#setEnglish"/>
+                </Menu>
+            </MenuBar>
+
+            <HBox spacing="10" alignment="CENTER_LEFT" style="-fx-padding: 10;">
+                <!-- ComboBox para seleccionar la tabla -->
+                <ComboBox fx:id="tablaComboBox" promptText="%select.table" prefWidth="150"/>
+                <!-- Campo de texto para filtrar resultados -->
+                <Label text="%label.filter"/>
+                <TextField fx:id="filterField" prefWidth="200" onKeyReleased="#filterByName"/>
+            </HBox>
+        </VBox>
     </top>
 
     <!-- TableView central que mostrará los datos de la tabla seleccionada -->

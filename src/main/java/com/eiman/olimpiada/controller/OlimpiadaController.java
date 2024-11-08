@@ -1,20 +1,17 @@
 package com.eiman.olimpiada.controller;
 
 import com.eiman.olimpiada.dao.OlimpiadaDAO;
-import com.eiman.olimpiada.dao.ParticipacionDAO;
 import com.eiman.olimpiada.model.Olimpiada;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
+import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextField;
+import javafx.scene.control.ToggleGroup;
 import javafx.stage.Stage;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
 import java.util.ResourceBundle;
 
 /**
@@ -23,33 +20,51 @@ import java.util.ResourceBundle;
 public class OlimpiadaController {
 
     private OlimpiadaDAO olimpiadaDAO;
-    private Olimpiada olimpiada;
-    private Connection connection;
     private boolean editMode;
+    private Connection connection;
+    private ResourceBundle bundle;
+    private Olimpiada olimpiada;
 
     @FXML
     private TextField nombreField;
     @FXML
     private TextField anioField;
     @FXML
-    private TextField temporadaField;
-    @FXML
     private TextField ciudadField;
+    @FXML
+    private RadioButton primaveraRadio;
+    @FXML
+    private RadioButton veranoRadio;
+    @FXML
+    private RadioButton otoñoRadio;
+    @FXML
+    private RadioButton inviernoRadio;
 
-    private ResourceBundle bundle;
+    private ToggleGroup temporadaGroup;
 
     public OlimpiadaController(){
-        this.bundle = ResourceBundle.getBundle("lang.messages", Locale.getDefault());
+        this.bundle = ResourceBundle.getBundle("lang.messages");
+    }
+
+    @FXML
+    public void initialize() {
+        // Inicializar el ToggleGroup para los RadioButton de temporada
+        temporadaGroup = new ToggleGroup();
+        primaveraRadio.setToggleGroup(temporadaGroup);
+        veranoRadio.setToggleGroup(temporadaGroup);
+        otoñoRadio.setToggleGroup(temporadaGroup);
+        inviernoRadio.setToggleGroup(temporadaGroup);
     }
 
     /**
-     * Establece la conexión a la base de datos y crea la instancia de OlimpiadaDAO.
+     * Método para establecer la conexión de base de datos en el controlador.
      *
-     * @param connection La conexión de base de datos a usar en este controlador.
+     * @param connection La conexión a la base de datos.
      */
     public void setConnection(Connection connection) {
         this.connection = connection;
-        this.olimpiadaDAO = new OlimpiadaDAO();
+        this.olimpiadaDAO = new OlimpiadaDAO(); // Inicializa OlimpiadaDAO
+        OlimpiadaDAO.setConnection(connection); // Configura la conexión en el DAO también
     }
 
     public void setEditMode(boolean editMode) {
@@ -57,92 +72,107 @@ public class OlimpiadaController {
     }
 
     /**
-     * Configura los datos en el formulario para modificar una olimpiada existente.
+     * Configura los datos de la olimpiada en el formulario.
+     *
+     * @param rowData Datos de la olimpiada como lista observable de strings.
      */
-    public void setData(ObservableList<String> row) {
-        nombreField.setText(row.get(1));       // Nombre de la olimpiada
-        anioField.setText(row.get(2));         // Año de la olimpiada
-        temporadaField.setText(row.get(3));    // Temporada (verano/invierno)
-        ciudadField.setText(row.get(4));       // Ciudad
+    public void setData(ObservableList<String> rowData) {
+        olimpiada = new Olimpiada();  // Inicializa el objeto Olimpiada si aún no está creado
+        olimpiada.setId(Integer.parseInt(rowData.get(0)));  // Configura el ID desde rowData
+        nombreField.setText(rowData.get(1));
+        anioField.setText(rowData.get(2));
+        ciudadField.setText(rowData.get(4));
+
+        // Configurar el RadioButton según la temporada
+        String temporada = rowData.get(3).toLowerCase();
+        switch (temporada) {
+            case "primavera":
+                temporadaGroup.selectToggle(primaveraRadio);
+                break;
+            case "verano":
+                temporadaGroup.selectToggle(veranoRadio);
+                break;
+            case "otoño":
+                temporadaGroup.selectToggle(otoñoRadio);
+                break;
+            case "invierno":
+                temporadaGroup.selectToggle(inviernoRadio);
+                break;
+            default:
+                temporadaGroup.selectToggle(null);
+                break;
+        }
     }
 
     /**
-     * Recupera los datos de la Olimpiada desde el formulario.
-     * @return Una instancia de Olimpiada con los datos ingresados en el formulario.
+     * Método que guarda o actualiza una olimpiada según el modo (nuevo o edición).
      */
-    public Olimpiada getOlimpiadaData() {
-        Olimpiada olimpiada = new Olimpiada();
-        olimpiada.setNombre(nombreField.getText());
-        olimpiada.setAnio(Integer.parseInt(anioField.getText()));
-        olimpiada.setTemporada(temporadaField.getText());
-        olimpiada.setCiudad(ciudadField.getText());
-        return olimpiada;
-    }
-
-    public void setEditMode(ObservableList<String> rowData) {
-        anioField.setText(rowData.get(1)); // Año de la olimpiada
-        nombreField.setText(rowData.get(2)); // Nombre de la olimpiada
-        temporadaField.setText(rowData.get(3)); // Temporada
-        ciudadField.setText(rowData.get(4)); // Ciudad
-    }
-
     @FXML
     private void handleSave() {
-        List<String> errors = new ArrayList<>();
+        if (validateForm()) {
+            // Crear una nueva instancia de Olimpiada con los datos del formulario si no existe
+            if (olimpiada == null) {
+                olimpiada = new Olimpiada();
+            }
 
-        String nombre = nombreField.getText();
-        if (nombre.isEmpty()) {
-            errors.add(bundle.getString("label.name"));
+            olimpiada.setNombre(nombreField.getText());
+            olimpiada.setAnio(Integer.parseInt(anioField.getText()));
+            olimpiada.setCiudad(ciudadField.getText());
+            olimpiada.setTemporada(((RadioButton) temporadaGroup.getSelectedToggle()).getText());
+
+            try {
+                boolean success;
+                if (editMode) {
+                    // Utiliza el ID de olimpiada para actualizar
+                    success = olimpiadaDAO.updateOlimpiada(olimpiada);
+                } else {
+                    success = olimpiadaDAO.insertOlimpiada(olimpiada);
+                }
+
+                if (success) {
+                    showAlert(bundle.getString("alert.success_save"), Alert.AlertType.INFORMATION);
+                    clearFields();
+                    closeWindow();
+                } else {
+                    showAlert(bundle.getString("alert.error_save"), Alert.AlertType.ERROR);
+                }
+            } catch (SQLException e) {
+                showAlert(bundle.getString("alert.error_database"), Alert.AlertType.ERROR);
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * Método para validar los campos del formulario de Olimpiada.
+     * @return true si el formulario es válido; de lo contrario, false.
+     */
+    private boolean validateForm() {
+        StringBuilder errorMessage = new StringBuilder();
+
+        if (nombreField.getText() == null || nombreField.getText().isEmpty()) {
+            errorMessage.append(bundle.getString("error.missing_name")).append("\n");
         }
 
-        int anio = 0;
         try {
-            anio = Integer.parseInt(anioField.getText());
+            Integer.parseInt(anioField.getText());
         } catch (NumberFormatException e) {
-            errors.add(MessageFormat.format(bundle.getString("error.invalid_number"), bundle.getString("label.year")));
+            errorMessage.append(bundle.getString("error.invalid_year")).append("\n");
         }
 
-        String temporada = temporadaField.getText();
-        if (temporada.isEmpty()) {
-            errors.add(bundle.getString("label.season"));
+        if (temporadaGroup.getSelectedToggle() == null) {
+            errorMessage.append(bundle.getString("error.missing_season")).append("\n");
         }
 
-        String ciudad = ciudadField.getText();
-        if (ciudad.isEmpty()) {
-            errors.add(bundle.getString("label.city"));
+        if (ciudadField.getText() == null || ciudadField.getText().isEmpty()) {
+            errorMessage.append(bundle.getString("error.missing_city")).append("\n");
         }
 
-        if (!errors.isEmpty()) {
-            showAlert(bundle.getString("error.missing_fields") + "\n- " + String.join("\n- ", errors), Alert.AlertType.ERROR);
-            return;
+        if (errorMessage.length() > 0) {
+            showAlert(errorMessage.toString(), Alert.AlertType.ERROR);
+            return false;
         }
-
-        try {
-            closeWindow();
-            Olimpiada olimpiada = new Olimpiada();
-            olimpiada.setNombre(nombre);
-            olimpiada.setAnio(anio);
-            olimpiada.setTemporada(temporada);
-            olimpiada.setCiudad(ciudad);
-
-            boolean success;
-            if (editMode) {
-                olimpiada.setId(this.olimpiada.getId()); // Aseguramos que use el ID en modo edición
-                success = olimpiadaDAO.updateOlimpiada(olimpiada); // Actualizar en modo edición
-            } else {
-                success = olimpiadaDAO.insertOlimpiada(olimpiada); // Insertar en modo nuevo
-            }
-
-            if (success) {
-                showAlert(bundle.getString("alert.success_save"), Alert.AlertType.INFORMATION);
-                clearFields();
-            } else {
-                showAlert(bundle.getString("alert.error_save"), Alert.AlertType.ERROR);
-            }
-        } catch (SQLException e) {
-            showAlert(bundle.getString("alert.error_database"), Alert.AlertType.ERROR);
-            e.printStackTrace();
-        }
+        return true;
     }
 
     @FXML
@@ -153,7 +183,7 @@ public class OlimpiadaController {
     private void clearFields() {
         nombreField.clear();
         anioField.clear();
-        temporadaField.clear();
+        temporadaGroup.selectToggle(null);
         ciudadField.clear();
     }
 
@@ -161,7 +191,6 @@ public class OlimpiadaController {
         Stage stage = (Stage) nombreField.getScene().getWindow();
         stage.close();
     }
-
 
     private void showAlert(String message, Alert.AlertType alertType) {
         Alert alert = new Alert(alertType);

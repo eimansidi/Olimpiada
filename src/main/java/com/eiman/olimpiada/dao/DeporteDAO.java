@@ -89,16 +89,16 @@ public class DeporteDAO {
      * @throws SQLException si ocurre un error al acceder a la base de datos.
      */
     public static int getIdByName(String nombre) throws SQLException {
-        String query = "SELECT id_evento FROM evento WHERE nombre = ?";
-        try (PreparedStatement stmt = connection.prepareStatement(query)) {
-            stmt.setString(1, nombre);
-            try (ResultSet rs = stmt.executeQuery()) {
+        String sql = "SELECT id_deporte FROM deporte WHERE nombre = ?";
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, nombre);
+            try (ResultSet rs = statement.executeQuery()) {
                 if (rs.next()) {
-                    return rs.getInt("id_evento");
+                    return rs.getInt("id_deporte");
                 }
             }
         }
-        return -1; // Retorna -1 si no se encuentra el evento
+        return -1; // Retorna -1 si no se encuentra el deporte
     }
 
     public static String getNameById(int id) throws SQLException {

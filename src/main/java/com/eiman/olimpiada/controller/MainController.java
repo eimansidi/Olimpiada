@@ -15,6 +15,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 
 import java.sql.*;
+import java.util.Locale;
 import java.util.ResourceBundle;
 import java.io.IOException;
 
@@ -27,7 +28,7 @@ public class MainController {
     @FXML
     private ComboBox<String> tablaComboBox;
     @FXML private TextField filterField;
-    private FilteredList<Object> filteredData;
+    private FilteredList<ObservableList<String>> filteredData;
     @FXML
     private TableView<ObservableList<String>> tablaView;
     @FXML
@@ -41,16 +42,7 @@ public class MainController {
      * Inicializa el controlador, configurando las opciones de la interfaz principal.
      */
     public void initialize() throws SQLException {
-        connection = DBConfig.getConnection();
-
-        // Configuración de la conexión de los DAOs
-        DeportistaDAO.setConnection(connection);
-        EventoDAO.setConnection(connection);
-        EquipoDAO.setConnection(connection);
-        OlimpiadaDAO.setConnection(connection);
-        ParticipacionDAO.setConnection(connection);
-        DeporteDAO.setConnection(connection);
-
+        setLanguage("es");
         tablaComboBox.setItems(FXCollections.observableArrayList("Deportista", "Equipo", "Evento", "Olimpiada", "Participacion", "Deporte"));
         tablaComboBox.getSelectionModel().selectedItemProperty().addListener((obs, oldTable, newTable) -> {
             if (newTable != null) {
@@ -59,13 +51,29 @@ public class MainController {
             }
         });
 
-        currentTable = "deportista";
-        loadTable(currentTable);
-    }
+        bundle = ResourceBundle.getBundle("lang.messages"); // Cargar archivo de mensajes
 
-    // Método para inicializar el ResourceBundle
-    public void setBundle(ResourceBundle bundle) {
-        this.bundle = bundle;
+        try {
+            // Configurar la conexión a la base de datos
+            connection = DBConfig.getConnection();
+            if (connection != null) {
+                // Configuración de conexión en los DAOs
+                DeportistaDAO.setConnection(connection);
+                EventoDAO.setConnection(connection);
+                EquipoDAO.setConnection(connection);
+                OlimpiadaDAO.setConnection(connection);
+                ParticipacionDAO.setConnection(connection);
+                DeporteDAO.setConnection(connection);
+            } else {
+                showAlert("alert.error_database", Alert.AlertType.ERROR);
+            }
+        } catch (SQLException e) {
+            showAlert("alert.error_database", Alert.AlertType.ERROR);
+            e.printStackTrace();
+        }
+
+        // Listener para el filtro se asigna después de cargar la tabla
+        filterField.textProperty().addListener((obs, oldValue, newValue) -> filterByName());
     }
 
     /**
@@ -78,17 +86,11 @@ public class MainController {
     }
 
     /**
-     * Carga la tabla seleccionada en la vista, configurando dinámicamente las columnas.
+     * Carga la tabla seleccionada y prepara `filteredData`.
      *
      * @param tableName Nombre de la tabla a cargar.
      */
     private void loadTable(String tableName) {
-        if (connection == null) {
-            System.err.println("Error: La conexión a la base de datos no está inicializada.");
-            return;
-        }
-
-        currentTable = tableName;
         tablaView.getColumns().clear();
         ObservableList<ObservableList<String>> data = FXCollections.observableArrayList();
 
@@ -104,7 +106,7 @@ public class MainController {
                 tablaView.getColumns().add(column);
             }
 
-            // Llenado de datos
+            // Llenado de datos y configuración de `filteredData`
             while (rs.next()) {
                 ObservableList<String> row = FXCollections.observableArrayList();
                 for (int i = 1; i <= rs.getMetaData().getColumnCount(); i++) {
@@ -113,31 +115,62 @@ public class MainController {
                 data.add(row);
             }
 
-            tablaView.setItems(data);
+            // Aplicar filtro a los datos cargados
+            filteredData = new FilteredList<>(data, p -> true);
+            tablaView.setItems(filteredData);
+
         } catch (SQLException e) {
             System.err.println("Error al cargar la tabla: " + e.getMessage());
         }
     }
 
     /**
-     * Maneja el filtro de búsqueda en la tabla actual, filtrando los resultados por nombre.
+     * Maneja el filtro de búsqueda en la tabla actual.
      */
     @FXML
     private void filterByName() {
-        String filterText = filterField.getText().toLowerCase();
-        filteredData.setPredicate(item -> {
-            if (filterText.isEmpty()) return true;
-            if (item instanceof Deportista) {
-                return ((Deportista) item).getNombre().toLowerCase().contains(filterText);
-            } else if (item instanceof Equipo) {
-                return ((Equipo) item).getNombre().toLowerCase().contains(filterText);
-            } else if (item instanceof Deporte) {
-                return ((Deporte) item).getNombre().toLowerCase().contains(filterText);
-            } else if (item instanceof Olimpiada) {
-                return ((Olimpiada) item).getNombre().toLowerCase().contains(filterText);
-            }
-            return false;
-        });
+        if (filteredData != null) {
+            String filterText = filterField.getText().toLowerCase();
+            filteredData.setPredicate(row -> {
+                if (filterText.isEmpty()) return true;
+
+                // Ajusta para verificar cualquier columna si contiene el texto
+                for (String cell : (ObservableList<String>) row) {
+                    if (cell != null && cell.toLowerCase().contains(filterText)) {
+                        return true;
+                    }
+                }
+                return false;
+            });
+        }
+    }
+
+    // Cambia el idioma a español
+    @FXML
+    private void setSpanish() {
+        setLanguage("es");
+    }
+
+    // Cambia el idioma a inglés
+    @FXML
+    private void setEnglish() {
+        setLanguage("en");
+    }
+
+    // Método común para establecer el idioma y actualizar los textos
+    private void setLanguage(String languageCode) {
+        Locale locale = new Locale(languageCode);
+        bundle = ResourceBundle.getBundle("lang.messages", locale);
+        updateTexts();
+    }
+
+    // Actualiza los textos de los elementos de la interfaz con el nuevo ResourceBundle
+    private void updateTexts() {
+        tablaComboBox.setPromptText(bundle.getString("select.table"));
+        addButton.setText(bundle.getString("button.add"));
+        modifyButton.setText(bundle.getString("button.modify"));
+        deleteButton.setText(bundle.getString("button.delete"));
+        // Actualizar otros textos de la interfaz según sea necesario
     }
 
     /**

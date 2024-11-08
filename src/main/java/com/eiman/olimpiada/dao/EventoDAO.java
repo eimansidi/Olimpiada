@@ -26,6 +26,18 @@ public class EventoDAO {
             }
         }
 
+        // Verificar si el id_olimpiada existe en la tabla olimpiada
+        String checkOlimpiadaQuery = "SELECT COUNT(*) FROM olimpiada WHERE id_olimpiada = ?";
+        try (PreparedStatement checkStmt = connection.prepareStatement(checkOlimpiadaQuery)) {
+            checkStmt.setInt(1, evento.getIdOlimpiada());
+            try (ResultSet rs = checkStmt.executeQuery()) {
+                if (rs.next() && rs.getInt(1) == 0) {
+                    System.out.println("Error: id_olimpiada no existe en la tabla olimpiada.");
+                    return false;  // id_olimpiada no existe, cancelar la inserción
+                }
+            }
+        }
+
         // Si el id_deporte es válido, procede con la inserción
         String sql = "INSERT INTO evento (nombre, id_deporte, id_olimpiada) VALUES (?, ?, ?)";
         try (PreparedStatement statement = connection.prepareStatement(sql)) {

@@ -24,13 +24,12 @@ public class MainOlimpiada extends Application {
             Connection connection = DBConfig.getConnection();
 
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/MainView.fxml"));
-            ResourceBundle bundle = ResourceBundle.getBundle("lang.messages_es");
+            ResourceBundle bundle = ResourceBundle.getBundle("lang.messages_en");
             loader.setResources(bundle);
 
             // Cargar y obtener el controlador
             Parent root = loader.load();
             MainController mainController = loader.getController();
-            mainController.setBundle(bundle);
             mainController.setConnection(connection);
 
             // Configuración de la escena

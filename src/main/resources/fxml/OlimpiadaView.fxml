@@ -3,22 +3,35 @@
 <?import javafx.scene.layout.*?>
 
 <VBox xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
-      fx:controller="com.eiman.olimpiada.controller.EventoController" spacing="10" alignment="CENTER" style="-fx-padding: 10;">
+      fx:controller="com.eiman.olimpiada.controller.OlimpiadaController"
+      spacing="10" alignment="CENTER" style="-fx-padding: 10;">
 
     <GridPane hgap="10" vgap="10">
-        <!-- Campo de nombre del evento -->
+
+        <!-- Campo Nombre -->
         <Label text="%label.name" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
         <TextField fx:id="nombreField" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
 
-        <!-- ComboBox de deportes -->
-        <Label text="%label.sport" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
-        <ComboBox fx:id="deporteComboBox" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+        <!-- Campo Año -->
+        <Label text="%label.year" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+        <TextField fx:id="anioField" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
 
-        <!-- ComboBox de olimpiadas -->
-        <Label text="%label.olympics" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
-        <ComboBox fx:id="olimpiadaComboBox" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+        <!-- Campo Temporada con RadioButton para las estaciones -->
+        <Label text="%label.season" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+        <HBox spacing="10" GridPane.rowIndex="2" GridPane.columnIndex="1">
+            <RadioButton fx:id="primaveraRadio" text="%label.spring"/>
+            <RadioButton fx:id="veranoRadio" text="%label.summer"/>
+            <RadioButton fx:id="otoñoRadio" text="%label.autumn"/>
+            <RadioButton fx:id="inviernoRadio" text="%label.winter"/>
+        </HBox>
+
+        <!-- Campo Ciudad -->
+        <Label text="%label.city" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+        <TextField fx:id="ciudadField" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+
     </GridPane>
 
+    <!-- Botones de acción -->
     <HBox spacing="10" alignment="CENTER">
         <Button text="%button.save" onAction="#handleSave"/>
         <Button text="%button.cancel" onAction="#handleCancel"/>
